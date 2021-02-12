@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from wgups.objects.package import Package
+from wgups.objects.truck import Truck
 
 
 class GUI:
@@ -38,6 +39,9 @@ class GUI:
     _string: ClassVar[str] = ""
     running: bool = True
     ticks: int = 2
+    events: int = 10
+
+    event_list: ClassVar[list] = []
 
     def run(self, **kwargs):
         os.system("cls")
@@ -56,12 +60,15 @@ class GUI:
             if kwargs.get("ticks") is not None:
                 self.ticks = kwargs.get("ticks")
                 print(f"Ticks set to {self.ticks}")
+            if kwargs.get("events") is not None:
+                self.events = kwargs.get("events")
 
         # Loop that controls the GUI display
         while self.running:
             self.flush()
             self._build_package_display()
             self._build_truck_display()
+            self._build_event_display()
             self.clear()
             self.display()
             time.sleep(1/self.ticks)
@@ -84,6 +91,16 @@ class GUI:
 
         return string
 
+    def _build_event_display(self):
+        list_length = len(GUI.event_list)
+        if list_length <= self.events:
+            for event in GUI.event_list:
+                GUI._string += f"{event}\n"
+        else:
+            spliced_list = GUI.event_list[list_length - self.events::]
+            for event in spliced_list:
+                GUI._string += f"{event}\n"
+
     def _build_package_display(self, new_line_index: int = 6, **kwargs):
         """
         Iterates through Package.package_list and populates the
@@ -96,7 +113,7 @@ class GUI:
         for i, package in enumerate(Package.package_list):
             #TODO: Provide kwargs to further set design options
             GUI._string += self._set_space(
-                f"Package {package.id}: {package.delivery_status.value}",
+                f"{self._set_space(f'Package {package.id}:', 11)} {package.delivery_status.value}",
                 45
             )
             if (i + 1) % new_line_index == 0:
@@ -105,7 +122,53 @@ class GUI:
         GUI._string += "\n\n"
 
     def _build_truck_display(self):
-        pass
+        """
+        Iterates through Truck.truck_list and populates the GUI._string
+        with each truck info.
+        :return:
+        """
+
+        # Creates the underlined header for each truck.
+        for truck in Truck.truck_list:
+            GUI._string += self._set_space(f"\033[4mTruck {truck.id}\033[0m", 68)
+
+        GUI._string += "\n"
+
+        for truck in Truck.truck_list:
+            GUI._string += self._set_space(f"Current Location: \u001b[34m{truck.current_hub.name}\u001b[0m", 69)
+        GUI._string += "\n"
+
+        for truck in Truck.truck_list:
+            GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.truck_miles}\u001b[0m", 69)
+        GUI._string += "\n"
+
+        #List the remaining packages under each ctruck.
+        for i in range(16):
+            try:
+                truck1_package = Truck.truck_list[0].packages[i]
+            except IndexError:
+                truck1_package = None
+            try:
+                truck2_package = Truck.truck_list[1].packages[i]
+            except IndexError:
+                truck2_package = None
+            try:
+                truck3_package = Truck.truck_list[3].packages[i]
+            except IndexError:
+                truck3_package = None
+
+            if truck1_package is None and truck2_package is None and truck3_package is None:
+                GUI._string += "\n"
+                break
+
+            if truck1_package is not None:
+                GUI._string += self._set_space(f"Package {truck1_package.id}: {truck1_package.address}", 60)
+            if truck2_package is not None:
+                GUI._string += self._set_space(f"Package {truck2_package.id}: {truck2_package.address}", 60)
+            if truck3_package is not None:
+                GUI._string += self._set_space(f"Package {truck3_package.id}: {truck3_package.address}", 60)
+
+            GUI._string += "\n"
 
     def clear(self):
         """
@@ -132,3 +195,7 @@ class GUI:
         """
         self.running = False
         sys.exit()
+
+    @classmethod
+    def add_event(cls, event: str):
+        GUI.event_list.append(event)

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 from wgups.enums.delivery_status import DeliveryStatus
+from wgups.objects.map_manager import MapManager
 
 
 @dataclass()
@@ -56,3 +57,10 @@ class Package:
         # the possibility to easily iterate through all packages when
         # building the GUI
         Package.package_list.append(self)
+
+        current_address_to_package_map = MapManager.address_to_package_map.get_or_default(self.address)
+        if current_address_to_package_map is None:
+            MapManager.address_to_package_map.put(self.address, [self])
+        else:
+            current_address_to_package_map.append(self)
+            MapManager.address_to_package_map.put(self.address, current_address_to_package_map)

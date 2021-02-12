@@ -1,4 +1,5 @@
 from wgups.objects.package import Package
+from wgups.objects.hub import Hub
 import csv
 
 
@@ -18,15 +19,13 @@ def read_packages():
         csv_file.close()
 
 
-def load_hubs():
+def read_hubs():
     with open("./data/WGUPS Distance Table.csv", mode='r', encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=",")
         keys = reversed(csv_reader.fieldnames[2:])
         print(csv_reader)
 
-        # for row in reversed(list(csv_reader)):
-        #     hub = Hub(row["Name"], row["Address"])
-        #     for key in keys:
-        #         if len(key) > 0:
-        #             hub.set_distance_map(key, row[key])
+        for row in list(csv_reader):
+            Hub(row["Name"], row["Address"])
+
     csv_file.close()
