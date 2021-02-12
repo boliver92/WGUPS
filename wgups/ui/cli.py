@@ -142,7 +142,7 @@ class GUI:
             GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.truck_miles}\u001b[0m", 69)
         GUI._string += "\n"
 
-        #List the remaining packages under each ctruck.
+        # List the remaining packages under each truck.
         for i in range(16):
             try:
                 truck1_package = Truck.truck_list[0].packages[i]
@@ -153,10 +153,12 @@ class GUI:
             except IndexError:
                 truck2_package = None
             try:
-                truck3_package = Truck.truck_list[3].packages[i]
+                truck3_package = Truck.truck_list[2].packages[i]
             except IndexError:
                 truck3_package = None
 
+            # Breaks the loop If there no more packages in any of the
+            # package list
             if truck1_package is None and truck2_package is None and truck3_package is None:
                 GUI._string += "\n"
                 break

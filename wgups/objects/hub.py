@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
+
+from wgups.ds.vertex import Vertex
 from wgups.objects.map_manager import MapManager
 
 
@@ -21,6 +23,7 @@ class Hub:
 
     name: str
     address: str
+    vertex: Vertex = None
 
     hub_list: ClassVar[list] = []
 
