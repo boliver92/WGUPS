@@ -139,6 +139,10 @@ class GUI:
         GUI._string += "\n"
 
         for truck in Truck.truck_list:
+            GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 78)
+        GUI._string += "\n"
+
+        for truck in Truck.truck_list:
             GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.truck_miles}\u001b[0m", 69)
         GUI._string += "\n"
 

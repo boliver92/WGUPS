@@ -68,7 +68,7 @@ def create_trucks(trucks_to_create: int = 3):
             package.delivery_status = DeliveryStatus.LOADED
 
 
-DEBUG = True
+DEBUG = False
 
 if __name__ == '__main__':
 
@@ -80,8 +80,7 @@ if __name__ == '__main__':
     connect_vertexes(routes)
 
     if DEBUG:
-        print(f"Adjency List\n\n{routes.adjacency_list}")
-        print(f"Edge List\n\n{routes.edge_weights}")
+        pass
     else:
         cli = GUI()
         cli.run()

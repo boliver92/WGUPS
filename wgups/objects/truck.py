@@ -3,6 +3,7 @@ from typing import ClassVar
 from wgups.objects.package import Package
 from wgups.objects.hub import Hub
 from wgups.objects.map_manager import MapManager
+from wgups.enums.truck_status import TruckStatus
 
 
 @dataclass()
@@ -34,6 +35,7 @@ class Truck:
     current_hub: Hub = None
     truck_miles: int = 0
     priority_packages = []
+    status: TruckStatus = TruckStatus.INACTIVE
 
     truck_list: ClassVar[list] = []
     total_miles: ClassVar[int] = 0
@@ -41,6 +43,7 @@ class Truck:
     def __post_init__(self):
         Truck.truck_list.append(self)
         self.current_hub = MapManager.name_to_hub_map.get("Western Governors University")
+
 
     def set_packages(self, package_list: list):
         """
@@ -52,3 +55,9 @@ class Truck:
             if package.delivery_deadline != "EOD":
                 self.priority_packages.append(package)
         print(self.priority_packages)
+
+    def toggle_status(self):
+        if self.status == TruckStatus.INACTIVE:
+            self.status = TruckStatus.ACTIVE
+        else:
+            self.status = TruckStatus.INACTIVE
