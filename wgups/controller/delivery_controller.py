@@ -8,8 +8,6 @@ import time
 @dataclass()
 class DeliveryController:
 
-    paused: ClassVar[bool] = False
-
     def start(self):
         routes = Graph()
         read_hubs()
@@ -18,7 +16,7 @@ class DeliveryController:
         create_vertexes(routes)
         connect_vertexes(routes)
 
-    def run(self, delay=None):
-        while not DeliveryController.paused:
-            print("************************************************RUN**********************************")
-            time.sleep(1)
+    def tick(self, delay=1):
+
+
+        time.sleep(delay)

@@ -1,6 +1,36 @@
+import msvcrt as m
+from wgups.objects.package import Package
 from wgups.ui.cli import GUI
 from wgups.controller.delivery_controller import DeliveryController
-import threading
+
+def get_any_key_prompt():
+    print("\n\nPress any key to continue...", end="\r")
+    m.getch()
+    print("Loading information hud....")
+
+def main_loop(cli, data_controller):
+    try:
+        while True:
+            data_controller.tick()
+            cli.tick()
+    except KeyboardInterrupt:
+        while True:
+            package_id = input("Type q to exit\nEnter the Package #: ")
+            if str.lower(package_id) == "q":
+                cli.exit()
+                return
+            try:
+                if 0 < int(package_id) < 41:
+                    cli.show_package(Package.package_list[int(package_id) - 1])
+                    get_any_key_prompt()
+                    break
+                else:
+                    print("Enter a package number between 1-40 or q to exit.")
+            except ValueError:
+                print("Enter a package number between 1-40 or q to exit.")
+
+        main_loop(cli, data_controller)
+
 
 if __name__ == '__main__':
     # Initialize GUI and data controller objects
@@ -10,8 +40,5 @@ if __name__ == '__main__':
     # Load objects before starting cli gui and running data logic loop
     data_controller.start()
 
-    cli_thread = threading.Thread(target=cli.run)
-    data_thread = threading.Thread(target=data_controller.run)
-
-    cli_thread.start()
-    data_thread.start()
+    while True:
+        main_loop(cli, data_controller)

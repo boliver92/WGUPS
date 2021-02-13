@@ -4,6 +4,7 @@ import sys
 import time
 from wgups.objects.package import Package
 from wgups.objects.truck import Truck
+from wgups.controller.delivery_controller import DeliveryController
 
 
 class GUI:
@@ -36,14 +37,16 @@ class GUI:
 
     package_string_list: list = []
     truck_string_list: list = []
-    _string: ClassVar[str] = ""
     running: bool = True
     ticks: int = 2
     events: int = 10
 
     event_list: ClassVar[list] = []
+    _string: ClassVar[str] = ""
+    interrupted: ClassVar[bool] = False
 
-    def run(self, **kwargs):
+
+    def tick(self, **kwargs):
         os.system("cls")
 
         """The main function for the GUI class.
@@ -64,14 +67,15 @@ class GUI:
                 self.events = kwargs.get("events")
 
         # Loop that controls the GUI display
-        while self.running:
-            self.flush()
-            self._build_package_display()
-            self._build_truck_display()
-            self._build_event_display()
-            self.clear()
-            self.display()
-            time.sleep(1/self.ticks)
+        self.flush()
+        self._build_package_display()
+        self._build_truck_display()
+        self._build_event_display()
+        self._build_user_input_display()
+        self.clear()
+        self.display()
+        time.sleep(1/self.ticks)
+
 
     def _set_space(self, string: str, spacing: int) -> str:
         """
@@ -120,6 +124,16 @@ class GUI:
                 GUI._string += "\n"
 
         GUI._string += "\n\n"
+
+    def _build_single_package_display(self, package: Package):
+        GUI._string += f"Package ID: {package.id}\n" \
+                       f"Delivery Address: {package.address}\n" \
+                       f"Delivery Deadline: {package.delivery_deadline}\n" \
+                       f"Delivery City: {package.city}\n" \
+                       f"Delivery Zip Code: {package.zip}\n" \
+                       f"Package Weight: {package.weight}\n" \
+                       f"Delivery Status: {package.delivery_status.value}\n"
+
 
     def _build_truck_display(self):
         """
@@ -176,17 +190,14 @@ class GUI:
 
             GUI._string += "\n"
 
+    def _build_user_input_display(self):
+        GUI._string += "\nPress Ctrl+C to obtain current package details by package number or to exit the program."
+
     def clear(self):
         """
         Clears the terminal
         """
         os.system("cls")
-
-    def flush(self):
-        """
-        Clears GUI._string to prepare it to be populated with the next output stream
-        """
-        GUI._string = ""
 
     def display(self):
         """ Displays the built string in the terminal.
@@ -201,6 +212,18 @@ class GUI:
         """
         self.running = False
         sys.exit()
+
+    def flush(self):
+        """
+        Clears GUI._string to prepare it to be populated with the next output stream
+        """
+        GUI._string = ""
+
+    def show_package(self, package: Package):
+        self.flush()
+        self._build_single_package_display(package)
+        self.clear()
+        self.display()
 
     @classmethod
     def add_event(cls, event: str):

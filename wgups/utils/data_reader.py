@@ -13,14 +13,14 @@ def read_packages():
     with open("./data/WGUPS Package File.csv", mode='r', encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            package = Package(int(row["Package ID"]),
-                              row["Address"],
-                              row["City"],
-                              row["State"],
-                              int(row["Zip"]),
-                              row["Delivery Deadline"],
-                              int(row["Mass KILO"]),
-                              row["Special Notes"])
+            Package(id=int(row["Package ID"]),
+                    address=row["Address"],
+                    city=row["City"],
+                    state=row["State"],
+                    zip=int(row["Zip"]),
+                    delivery_deadline=row["Delivery Deadline"],
+                    weight=int(row["Mass KILO"]),
+                    special_notes=row["Special Notes"])
 
         csv_file.close()
 
