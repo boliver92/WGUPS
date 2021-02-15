@@ -2,20 +2,24 @@ import msvcrt as m
 from wgups.objects.package import Package
 from wgups.ui.cli import GUI
 from wgups.controller.delivery_controller import DeliveryController
+import time
 
 def get_any_key_prompt():
     print("\n\nPress any key to continue...", end="\r")
     m.getch()
     print("Loading information hud....")
 
-def main_loop(cli, data_controller):
+def main_loop(cli, data_controller, fast_mode = False):
     try:
         while True:
-            data_controller.tick()
             cli.tick()
+            data_controller.tick()
+            if fast_mode is False:
+                time.sleep(1)
+
     except KeyboardInterrupt:
         while True:
-            package_id = input("Type q to exit\nEnter the Package #: ")
+            package_id = input("\u001b[31m(Type q to exit)\u001b[0m Enter the Package #: ")
             if str.lower(package_id) == "q":
                 cli.exit()
                 return

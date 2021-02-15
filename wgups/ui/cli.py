@@ -45,7 +45,6 @@ class GUI:
     _string: ClassVar[str] = ""
     interrupted: ClassVar[bool] = False
 
-
     def tick(self, **kwargs):
         os.system("cls")
 
@@ -74,8 +73,6 @@ class GUI:
         self._build_user_input_display()
         self.clear()
         self.display()
-        time.sleep(1/self.ticks)
-
 
     def _set_space(self, string: str, spacing: int) -> str:
         """
@@ -98,9 +95,11 @@ class GUI:
     def _build_event_display(self):
         list_length = len(GUI.event_list)
         if list_length <= self.events:
+            GUI._string += "\n"
             for event in GUI.event_list:
                 GUI._string += f"{event}\n"
         else:
+            GUI._string += "\n"
             spliced_list = GUI.event_list[list_length - self.events::]
             for event in spliced_list:
                 GUI._string += f"{event}\n"
@@ -115,7 +114,7 @@ class GUI:
         :return:
         """
         for i, package in enumerate(Package.package_list):
-            #TODO: Provide kwargs to further set design options
+            # TODO: Provide kwargs to further set design options
             GUI._string += self._set_space(
                 f"{self._set_space(f'Package {package.id}:', 11)} {package.delivery_status.value}",
                 45
@@ -133,7 +132,6 @@ class GUI:
                        f"Delivery Zip Code: {package.zip}\n" \
                        f"Package Weight: {package.weight}\n" \
                        f"Delivery Status: {package.delivery_status.value}\n"
-
 
     def _build_truck_display(self):
         """
@@ -191,7 +189,8 @@ class GUI:
             GUI._string += "\n"
 
     def _build_user_input_display(self):
-        GUI._string += "\nPress Ctrl+C to obtain current package details by package number or to exit the program."
+        GUI._string += "\n\u001b[36;1mPress Ctrl+C to obtain current package details by package number or to exit the " \
+                       "program.\u001b[0m "
 
     def clear(self):
         """
