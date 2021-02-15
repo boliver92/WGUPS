@@ -53,9 +53,6 @@ class Truck:
         self.packages = [package for package in package_list]
         for package in self.packages:
             wgups.ui.cli.GUI.add_event(f"\u001b[34mPackage {package.id}\u001b[0m was loaded onto \u001b[32mTruck {self.id}.\u001b[0m")
-            if package.delivery_deadline != "EOD":
-                self.priority_packages.append(package)
-        print(self.priority_packages)
 
     def toggle_status(self):
         if self.status == TruckStatus.INACTIVE:

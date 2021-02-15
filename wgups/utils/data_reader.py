@@ -108,22 +108,23 @@ def load_truck(truck_to_load):
             Package.package_list[31]  # (16)
         ])
 
-        if truck_to_load == 3:
-            Truck.truck_list[2].set_packages([
-                Package.package_list[8],
-                Package.package_list[29],
-                Package.package_list[30],
-                Package.package_list[32],
-                Package.package_list[33],
-                Package.package_list[34],
-                Package.package_list[36],
-                Package.package_list[38],
-                Package.package_list[39]
-            ])
+    if truck_to_load == 3:
+        Truck.truck_list[2].set_packages([
+            Package.package_list[8],
+            Package.package_list[29],
+            Package.package_list[30],
+            Package.package_list[32],
+            Package.package_list[33],
+            Package.package_list[34],
+            Package.package_list[36],
+            Package.package_list[38],
+            Package.package_list[39]
+        ])
 
     for truck in Truck.truck_list:
         for package in truck.packages:
             package.delivery_status = DeliveryStatus.LOADED
+
 
 def create_trucks(trucks_to_create: int = 3):
     for i in range(trucks_to_create):

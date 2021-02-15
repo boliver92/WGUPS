@@ -104,9 +104,10 @@ class DeliveryController:
             cli.GUI.add_event("Delayed packages received at 9:05 AM")
             load_truck(2)
             load_truck(3)
+            truck.Truck.truck_list[1].toggle_status()
             self.special_events["9:05 AM"] = True
 
-        if (self.clock.hour > 10 or (self.clock.hour == 10 and self.clock.minute >= 20)) and self.special_events.get("9:05 AM") is False:
+        if (self.clock.hour > 10 or (self.clock.hour == 10 and self.clock.minute >= 20)) and self.special_events.get("10:20 AM") is False:
             cli.GUI.add_event("Package #9's address was corrected to 410 S State St.")
             pkg = package.Package.package_list[8]
             pkg.address = "410 S State St"

@@ -56,8 +56,6 @@ class Hashmap:
 
         for entry in bucket_list:
             entry_key, entry_value = entry
-            print(entry_key)
-            print(entry_value)
 
             if entry_key == key:
                 return entry_value

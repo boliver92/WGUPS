@@ -189,8 +189,8 @@ class GUI:
             GUI._string += "\n"
 
     def _build_user_input_display(self):
-        GUI._string += "\n\u001b[36;1mPress Ctrl+C to obtain current package details by package number or to exit the " \
-                       "program.\u001b[0m "
+        GUI._string += "\n\u001b[36;1mPress Ctrl+C to search package details.\u001b[0m" \
+                       "\n\u001b[31mPress ESC to exit the program.\u001b[0m"
 
     def clear(self):
         """
