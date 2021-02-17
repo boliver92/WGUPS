@@ -1,10 +1,10 @@
 from typing import ClassVar
 import os
 import sys
-import time
-from wgups.objects.package import Package
-from wgups.objects.truck import Truck
-from wgups.controller.delivery_controller import DeliveryController
+
+import wgups.objects.clock as clk
+import wgups.objects.package as pkg
+import wgups.objects.truck as trk
 
 
 class GUI:
@@ -34,7 +34,6 @@ class GUI:
 
             The framerate/tickrate of the GUI.
     """
-
     package_string_list: list = []
     truck_string_list: list = []
     running: bool = True
@@ -44,6 +43,9 @@ class GUI:
     event_list: ClassVar[list] = []
     _string: ClassVar[str] = ""
     interrupted: ClassVar[bool] = False
+
+    def __init__(self, clock: clk):
+        self.clock = clock
 
     def tick(self, **kwargs):
         os.system("cls")
@@ -70,6 +72,7 @@ class GUI:
         self._build_package_display()
         self._build_truck_display()
         self._build_event_display()
+        self._build_time_display()
         self._build_user_input_display()
         self.clear()
         self.display()
@@ -113,7 +116,7 @@ class GUI:
         string
         :return:
         """
-        for i, package in enumerate(Package.package_list):
+        for i, package in enumerate(pkg.Package.package_list):
             # TODO: Provide kwargs to further set design options
             GUI._string += self._set_space(
                 f"{self._set_space(f'Package {package.id}:', 11)} {package.delivery_status.value}",
@@ -124,7 +127,7 @@ class GUI:
 
         GUI._string += "\n\n"
 
-    def _build_single_package_display(self, package: Package):
+    def _build_single_package_display(self, package: pkg.Package):
         GUI._string += f"Package ID: {package.id}\n" \
                        f"Delivery Address: {package.address}\n" \
                        f"Delivery Deadline: {package.delivery_deadline}\n" \
@@ -132,6 +135,9 @@ class GUI:
                        f"Delivery Zip Code: {package.zip}\n" \
                        f"Package Weight: {package.weight}\n" \
                        f"Delivery Status: {package.delivery_status.value}\n"
+
+    def _build_time_display(self):
+        GUI._string += f"\n\u001b[31;1mCurrent Time: {self.clock}\u001b[0m"
 
     def _build_truck_display(self):
         """
@@ -141,35 +147,49 @@ class GUI:
         """
 
         # Creates the underlined header for each truck.
-        for truck in Truck.truck_list:
+        for truck in trk.Truck.truck_list:
             GUI._string += self._set_space(f"\033[4mTruck {truck.id}\033[0m", 68)
 
         GUI._string += "\n"
 
-        for truck in Truck.truck_list:
+        for truck in trk.Truck.truck_list:
             GUI._string += self._set_space(f"Current Location: \u001b[34m{truck.current_hub.name}\u001b[0m", 69)
         GUI._string += "\n"
 
-        for truck in Truck.truck_list:
+        for truck in trk.Truck.truck_list:
             GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 78)
         GUI._string += "\n"
 
-        for truck in Truck.truck_list:
+        for truck in trk.Truck.truck_list:
             GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.truck_miles}\u001b[0m", 69)
+        GUI._string += "\n"
+
+        for truck in trk.Truck.truck_list:
+            pkg1: pkg.Package = truck.current_package
+            if pkg1 is not None:
+                GUI._string += self._set_space(
+                    f"Currently Delivering: \u001b[34mPackage {truck.current_package.id}\u001b[0m", 69)
+            else:
+                GUI._string += self._set_space(f"Currently Delivering: \u001b[31mNone\u001b[0m", 69)
+
+        GUI._string += "\n\n"
+
+        for i in range(len(trk.Truck.truck_list)):
+            GUI._string += self._set_space("----Truck Inventory----", 61)
         GUI._string += "\n"
 
         # List the remaining packages under each truck.
         for i in range(16):
             try:
-                truck1_package = Truck.truck_list[0].packages[i]
+                truck1_package = trk.Truck.truck_list[0].packages[i]
             except IndexError:
                 truck1_package = None
             try:
-                truck2_package = Truck.truck_list[1].packages[i]
+                truck2_package = trk.Truck.truck_list[1].packages[i]
             except IndexError:
                 truck2_package = None
             try:
-                truck3_package = Truck.truck_list[2].packages[i]
+                truck3_package = trk.Truck.truck_list[2].packages[i]
             except IndexError:
                 truck3_package = None
 
@@ -218,7 +238,7 @@ class GUI:
         """
         GUI._string = ""
 
-    def show_package(self, package: Package):
+    def show_package(self, package: pkg.Package):
         self.flush()
         self._build_single_package_display(package)
         self.clear()

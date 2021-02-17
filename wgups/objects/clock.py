@@ -18,16 +18,17 @@ class Clock:
         meridian: str
             The current "meridian" (AM or PM)
     """
-    def __init__(self, total_minutes: int = 480):
+
+    def __init__(self, total_minutes: float = 480.0):
         self.total_minutes = total_minutes
-        self.minute = total_minutes % 60
-        self.hour = (total_minutes // 60) % 24
+        self.minute = int(total_minutes % 60)
+        self.hour = int((total_minutes // 60) % 24)
         if self.hour >= 12:
             self.meridian = "PM"
         else:
             self.meridian = "AM"
 
-    def add_minutes(self, minutes_to_add: int):
+    def add_minutes(self, minutes_to_add: float):
         """Adds to the specified number of minutes to the Clock instance's
         total_minutes and updates the instance's hour, minute, and
         meridian properties.
@@ -42,8 +43,8 @@ class Clock:
             O(1)
         """
         self.total_minutes += minutes_to_add
-        self.minute = self.total_minutes % 60
-        self.hour = (self.total_minutes // 60) % 24
+        self.minute = int(self.total_minutes % 60)
+        self.hour = int((self.total_minutes // 60) % 24)
         if self.hour >= 12:
             self.meridian = "PM"
         else:
@@ -65,9 +66,9 @@ class Clock:
         Time Complexity
             O(1)
         """
-        self.total_minutes += hours_to_add
-        self.minute = self.total_minutes % 60
-        self.hour = (self.total_minutes // 60) % 24
+        self.total_minutes += (hours_to_add * 60)
+        self.minute = int(self.total_minutes % 60)
+        self.hour = int((self.total_minutes // 60) % 24)
         if self.hour >= 12:
             self.meridian = "PM"
         else:
@@ -116,3 +117,7 @@ class Clock:
             return f"{strHr}:0{self.minute} {self.meridian}"
         else:
             return f"{strHr}:{self.minute} {self.meridian}"
+
+    def simulate_minutes(self, miles_to_simulate):
+        minutes_to_simulate = (18 / 60) * miles_to_simulate
+        self.add_minutes(minutes_to_simulate)

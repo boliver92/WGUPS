@@ -4,7 +4,6 @@ from wgups.enums.delivery_status import DeliveryStatus
 from wgups.objects.map_manager import MapManager
 
 
-@dataclass()
 class Package:
     """ A Package class to represent a package.
 
@@ -39,23 +38,20 @@ class Package:
             The current delivery status of the package.
     """
 
-    id: int
-    address: str
-    city: str
-    state: str
-    zip: int
-    delivery_deadline: str
-    weight: int
-    special_notes: str
-    delivery_status: DeliveryStatus = DeliveryStatus.LOADING
-
     # Class Variables
-    package_list: ClassVar[list] = []
+    package_list = []
 
-    def __post_init__(self):
-        # Adds the package to the static package_list. This will allow
-        # the possibility to easily iterate through all packages when
-        # building the GUI
+    def __init__(self, id: int, address: str, city: str, state: str, zip: int, delivery_deadline: str, weight: int, special_notes: str, delivery_status: DeliveryStatus = DeliveryStatus.LOADING):
+        self.id = id
+        self.address = address
+        self.city = city
+        self.state = state
+        self.zip = zip
+        self.delivery_deadline = delivery_deadline
+        self.weight = weight
+        self.special_notes = special_notes
+        self.delivery_status = delivery_status
+
         Package.package_list.append(self)
 
         current_address_to_package_map = MapManager.address_to_package_map.get_or_default(self.address)

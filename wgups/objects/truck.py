@@ -1,12 +1,13 @@
-from dataclasses import dataclass
-from typing import ClassVar
+from wgups.ds.graph import Graph, dijkstra_shortest_path, get_shortest_path
+from wgups.ds.vertex import Vertex
+import wgups.objects.clock as clok
 from wgups.objects.hub import Hub
 from wgups.objects.map_manager import MapManager
 from wgups.enums.truck_status import TruckStatus
-import wgups.ui.cli
+import wgups.ui.cli as cli
+from wgups.enums.delivery_status import DeliveryStatus
 
 
-@dataclass()
 class Truck:
     """
     Class representation of a truck.
@@ -30,20 +31,20 @@ class Truck:
             driven by all trucks
     """
 
-    id: int
-    packages = []
-    current_hub: Hub = None
-    truck_miles: int = 0
-    priority_packages = []
-    status: TruckStatus = TruckStatus.INACTIVE
+    truck_list = []
+    total_miles: float = 0.0
+    AVERAGE_MPH = 18.0
 
-    truck_list: ClassVar[list] = []
-    total_miles: ClassVar[int] = 0
-
-    def __post_init__(self):
-        Truck.truck_list.append(self)
+    def __init__(self, id):
+        self.id = id
+        self.packages = []
         self.current_hub = MapManager.name_to_hub_map.get("Western Governors University")
+        self.truck_miles: float = 0.0
+        self.status: TruckStatus = TruckStatus.INACTIVE
+        self.current_package = None
+        self.current_path = []
 
+        Truck.truck_list.append(self)
 
     def set_packages(self, package_list: list):
         """
@@ -52,7 +53,8 @@ class Truck:
         """
         self.packages = [package for package in package_list]
         for package in self.packages:
-            wgups.ui.cli.GUI.add_event(f"\u001b[34mPackage {package.id}\u001b[0m was loaded onto \u001b[32mTruck {self.id}.\u001b[0m")
+            cli.GUI.add_event(
+                f"\u001b[34mPackage {package.id}\u001b[0m was loaded onto \u001b[32mTruck {self.id}.\u001b[0m")
 
     def toggle_status(self):
         if self.status == TruckStatus.INACTIVE:
@@ -60,4 +62,59 @@ class Truck:
         else:
             self.status = TruckStatus.INACTIVE
 
-        wgups.ui.cli.GUI.add_event(f"\u001b[34mTruck {self.id}\u001b[0m is now {self.status.value}")
+        cli.GUI.add_event(f"\u001b[34mTruck {self.id}\u001b[0m is now {self.status.value}")
+
+    def has_package(self) -> bool:
+        return len(self.packages) > 0
+
+    def get_next_stop(self, graph):
+
+        start_hub: Hub = self.current_hub
+        start_vertex: Vertex = start_hub.vertex
+
+        end_vertex = None
+        end_distance = 1000.0
+
+        dijkstra_shortest_path(graph, start_vertex)
+
+        for package in self.packages:
+            end_hub: Hub = MapManager.address_to_hub_map.get(package.address)
+            end_vertex_to_compare: Vertex = end_hub.vertex
+            if graph.edge_weights[(start_vertex, end_vertex_to_compare)] < end_distance:
+                end_vertex = end_vertex_to_compare
+                end_distance = graph.edge_weights[(start_vertex, end_vertex)]
+
+        self.current_path = get_shortest_path(start_vertex, end_vertex)
+
+    def deliver_package(self, clock):
+        for package in self.packages:
+            if package.address == self.current_hub.address:
+                package.delivery_status = DeliveryStatus.DELIVERED
+                self.packages.remove(package)
+                cli.GUI.add_event(f"{clock}: Package {package.id} was delivered to {self.current_hub.address}")
+
+    def goto_next_hub(self, graph: Graph, clock: clok.Clock) -> clok.Clock:
+        simulated_clock = clok.Clock(clock.total_minutes)
+        current_vertex = self.current_hub.vertex
+        next_hub_vertex = self.current_path.pop()
+        distance = graph.edge_weights[(current_vertex, next_hub_vertex)]
+
+        simulated_clock.simulate_minutes(distance)
+
+        next_hub = MapManager.name_to_hub_map.get(next_hub_vertex.label)
+        self.current_hub = next_hub
+        self.truck_miles += distance
+        Truck.total_miles += distance
+
+        return simulated_clock
+
+    def tick(self, graph: Graph, clock: clok.Clock):
+        if not self.has_package():
+            self.toggle_status()
+            return
+        if len(self.current_path) == 0:
+            self.get_next_stop(graph)
+
+        simulated_clock = self.goto_next_hub(graph, clock)
+        self.deliver_package(simulated_clock)
+        clock.add_minutes(simulated_clock.total_minutes - clock.total_minutes) # Remove later - just for testing

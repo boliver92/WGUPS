@@ -1,4 +1,5 @@
 import msvcrt as m
+from wgups.objects.clock import Clock
 from wgups.objects.package import Package
 from wgups.ui.cli import GUI
 from wgups.controller.delivery_controller import DeliveryController
@@ -24,6 +25,27 @@ user32.ShowWindow.argtypes = (wintypes.HWND, ctypes.c_int)
 
 
 def maximize_console(lines=None):
+    """
+    This function maximizes the console/terminal running the script.
+
+    Notes from StackOverflow: It uses ctypes to call WinAPI functions.
+    First it calls GetLargestConsoleWindowSize in order to figure how
+    big it can make the window, with the option to specify a number of
+    lines that exceeds this in order to get a scrollback buffer. To do
+    the work of resizing the screen buffer it simply calls mode.com
+    via subprocess.check_call. Finally, it gets the console window
+    handle via GetConsoleWindow and calls ShowWindow to maximize it.
+
+    :param lines: Needed if you would like to create a scrollback buffer
+    to exceed the number of lines that can be shown in a window.
+    :return: None
+
+    Space Complexity
+        O(N)
+
+    Time Complexity
+        O(1)
+    """
     fd = os.open('CONOUT$', os.O_RDWR)
     try:
         hCon = m.get_osfhandle(fd)
@@ -113,9 +135,10 @@ def main_loop(cli, data_controller, fast_mode=False):
 
 
 if __name__ == '__main__':
+    app_clock: Clock = Clock()
     # Initialize GUI and data controller objects
-    cli = GUI()
-    data_controller = DeliveryController()
+    cli = GUI(clock=app_clock)
+    data_controller = DeliveryController(clock=app_clock)
 
     # Load objects before starting cli gui and running data logic loop
     data_controller.start()

@@ -2,20 +2,23 @@ from dataclasses import dataclass
 import wgups.objects.truck as truck
 import wgups.ui.cli as cli
 from wgups.ds.graph import Graph
-from wgups.objects.clock import Clock
-from wgups.utils.data_reader import read_hubs, read_packages, create_trucks, create_vertexes, connect_vertexes, \
-    load_truck
+from wgups.enums.truck_status import TruckStatus
+import wgups.objects.clock as clk
+from wgups.utils.data_reader import read_hubs, read_packages, create_vertices, create_trucks, connect_vertices, load_truck
 import wgups.objects.package as package
 
 
-@dataclass()
+
 class DeliveryController:
-    clock: Clock = Clock()
-    special_events = {
-        "8:00 AM": False,
-        "9:05 AM": False,
-        "10:20 AM": False
-    }
+
+    def __init__(self, clock: clk.Clock):
+        self.clock = clock
+        self.graph = Graph()
+        self.special_events = {
+            "8:00 AM": False,
+            "9:05 AM": False,
+            "10:20 AM": False
+        }
 
     def start(self):
         """Loads the data needed for the program to function.
@@ -46,12 +49,11 @@ class DeliveryController:
         Time Complexity
             O(1)
         """
-        routes = Graph()
         read_hubs()
         read_packages()
         create_trucks()
-        create_vertexes(routes)
-        connect_vertexes(routes)
+        create_vertices(self.graph)
+        connect_vertices(self.graph)
 
     def tick(self):
         """
@@ -67,8 +69,9 @@ class DeliveryController:
             O(1)
         """
         self._fire_special_events()
-        print(self.clock)
-        self.clock.add_minutes(5)
+        for _truck in truck.Truck.truck_list:
+            if _truck.status == TruckStatus.ACTIVE:
+                _truck.tick(self.graph, self.clock)
 
     def _fire_special_events(self):
         """

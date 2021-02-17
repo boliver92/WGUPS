@@ -21,13 +21,16 @@ class Hub:
             The address of the HUB
     """
 
-    name: str
-    address: str
-    vertex: Vertex = None
+    hub_list = []
 
-    hub_list: ClassVar[list] = []
+    def __init__(self, name: str, address: str, vertex: Vertex = None):
+        self.name = name
+        self.address = address
+        self.vertex = vertex
 
-    def __post_init__(self):
         Hub.hub_list.append(self)
         MapManager.name_to_hub_map.put(self.name, self)
         MapManager.address_to_hub_map.put(self.address, self)
+
+    def __repr__(self):
+        return f"HUB: {self.name}, ADDRESS: {self.address}"
