@@ -5,4 +5,6 @@ class Vertex:
         self.label = label
         self.distance = float('inf')
         self.pred_vertex = None
+        self.hub = None
+        self.address = None
         Vertex.vertex_list.append(self)

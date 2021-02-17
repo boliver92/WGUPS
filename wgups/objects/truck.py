@@ -1,6 +1,6 @@
 from wgups.ds.graph import Graph, dijkstra_shortest_path, get_shortest_path
 from wgups.ds.vertex import Vertex
-import wgups.objects.clock as clok
+from wgups.objects.clock import Clock
 from wgups.objects.hub import Hub
 from wgups.objects.map_manager import MapManager
 from wgups.enums.truck_status import TruckStatus
@@ -43,24 +43,32 @@ class Truck:
         self.status: TruckStatus = TruckStatus.INACTIVE
         self.current_package = None
         self.current_path = []
+        self.active = False
 
         Truck.truck_list.append(self)
 
-    def set_packages(self, package_list: list):
+    def set_packages(self):
         """
         Sets the truck instance's package list to the package_list parameter.
         :param package_list: The package list to be associated with the truck
         """
-        self.packages = [package for package in package_list]
         for package in self.packages:
             cli.GUI.add_event(
                 f"\u001b[34mPackage {package.id}\u001b[0m was loaded onto \u001b[32mTruck {self.id}.\u001b[0m")
+            package.delivery_status = DeliveryStatus.LOADED
 
     def toggle_status(self):
-        if self.status == TruckStatus.INACTIVE:
+        if not self.active:
             self.status = TruckStatus.ACTIVE
+            self.active = True
         else:
             self.status = TruckStatus.INACTIVE
+            self.active = False
+
+            if self.id != 3:
+                truck3 = Truck.truck_list[2]
+                if not truck3.active:
+                    truck3.toggle_status()
 
         cli.GUI.add_event(f"\u001b[34mTruck {self.id}\u001b[0m is now {self.status.value}")
 
@@ -77,14 +85,28 @@ class Truck:
 
         dijkstra_shortest_path(graph, start_vertex)
 
-        for package in self.packages:
-            end_hub: Hub = MapManager.address_to_hub_map.get(package.address)
-            end_vertex_to_compare: Vertex = end_hub.vertex
-            if graph.edge_weights[(start_vertex, end_vertex_to_compare)] < end_distance:
-                end_vertex = end_vertex_to_compare
-                end_distance = graph.edge_weights[(start_vertex, end_vertex)]
+        if len(self.packages) > 1:
+            for package in self.packages:
+                for vertex in Vertex.vertex_list:
+                    if vertex.address == package.address:
+                        end_vertex_to_compare = vertex
+                        if end_vertex_to_compare is not None and graph.edge_weights[(start_vertex, end_vertex_to_compare)] <= end_distance:
+                            end_vertex = end_vertex_to_compare
+                            end_distance = graph.edge_weights[(start_vertex, end_vertex)]
+        else:
+            package = self.packages[0]
+            for vertex in Vertex.vertex_list:
+                if vertex.address == package.address:
+                    end_vertex = vertex
 
         self.current_path = get_shortest_path(start_vertex, end_vertex)
+
+        if len(self.current_path) < 1:
+            package = self.packages[0]
+            for vertex in Vertex.vertex_list:
+                if vertex.address == package.address:
+                    end_vertex = vertex
+                    self.current_path = get_shortest_path(start_vertex, end_vertex)
 
     def deliver_package(self, clock):
         for package in self.packages:
@@ -93,10 +115,13 @@ class Truck:
                 self.packages.remove(package)
                 cli.GUI.add_event(f"{clock}: Package {package.id} was delivered to {self.current_hub.address}")
 
-    def goto_next_hub(self, graph: Graph, clock: clok.Clock) -> clok.Clock:
-        simulated_clock = clok.Clock(clock.total_minutes)
+    def goto_next_hub(self, graph: Graph, clock: Clock) -> Clock:
+        simulated_clock = Clock(clock.total_minutes)
         current_vertex = self.current_hub.vertex
-        next_hub_vertex = self.current_path.pop()
+        try:
+            next_hub_vertex = self.current_path.pop()
+        except IndexError:
+            return simulated_clock
         distance = graph.edge_weights[(current_vertex, next_hub_vertex)]
 
         simulated_clock.simulate_minutes(distance)
@@ -108,13 +133,19 @@ class Truck:
 
         return simulated_clock
 
-    def tick(self, graph: Graph, clock: clok.Clock):
+    def tick(self, graph: Graph, clock: Clock):
         if not self.has_package():
             self.toggle_status()
             return
-        if len(self.current_path) == 0:
+
+        if len(self.current_path) <= 0:
             self.get_next_stop(graph)
 
-        simulated_clock = self.goto_next_hub(graph, clock)
-        self.deliver_package(simulated_clock)
-        clock.add_minutes(simulated_clock.total_minutes - clock.total_minutes) # Remove later - just for testing
+        if len(self.current_path) > 0:
+            simulated_clock = self.goto_next_hub(graph, clock)
+            self.deliver_package(simulated_clock)
+        else:
+            return
+
+        if simulated_clock.total_minutes > Clock.max_min:
+            Clock.max_min = simulated_clock.total_minutes

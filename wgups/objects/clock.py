@@ -19,6 +19,8 @@ class Clock:
             The current "meridian" (AM or PM)
     """
 
+    max_min: int = 0
+
     def __init__(self, total_minutes: float = 480.0):
         self.total_minutes = total_minutes
         self.minute = int(total_minutes % 60)
@@ -119,5 +121,15 @@ class Clock:
             return f"{strHr}:{self.minute} {self.meridian}"
 
     def simulate_minutes(self, miles_to_simulate):
-        minutes_to_simulate = (18 / 60) * miles_to_simulate
+        minutes_to_simulate = (60 / 18) * miles_to_simulate
         self.add_minutes(minutes_to_simulate)
+
+    def refresh(self):
+        self.total_minutes = Clock.max_min
+        self.minute = int(self.total_minutes % 60)
+        self.hour = int((self.total_minutes // 60) % 24)
+        if self.hour >= 12:
+            self.meridian = "PM"
+        else:
+            self.meridian = "AM"
+        Clock.max_min = 0

@@ -27,7 +27,8 @@ class Hub:
         self.name = name
         self.address = address
         self.vertex = vertex
-
+        self.vertex.hub = self
+        self.vertex.address = self.address
         Hub.hub_list.append(self)
         MapManager.name_to_hub_map.put(self.name, self)
         MapManager.address_to_hub_map.put(self.address, self)

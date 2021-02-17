@@ -5,6 +5,8 @@ import sys
 import wgups.objects.clock as clk
 import wgups.objects.package as pkg
 import wgups.objects.truck as trk
+from wgups.objects.hub import Hub
+from wgups.objects.map_manager import MapManager
 
 
 class GUI:
@@ -72,6 +74,7 @@ class GUI:
         self._build_package_display()
         self._build_truck_display()
         self._build_event_display()
+        self._build_total_mile_display()
         self._build_time_display()
         self._build_user_input_display()
         self.clear()
@@ -128,6 +131,8 @@ class GUI:
         GUI._string += "\n\n"
 
     def _build_single_package_display(self, package: pkg.Package):
+        for hub in Hub.hub_list:
+            print(hub.address)
         GUI._string += f"Package ID: {package.id}\n" \
                        f"Delivery Address: {package.address}\n" \
                        f"Delivery Deadline: {package.delivery_deadline}\n" \
@@ -135,6 +140,9 @@ class GUI:
                        f"Delivery Zip Code: {package.zip}\n" \
                        f"Package Weight: {package.weight}\n" \
                        f"Delivery Status: {package.delivery_status.value}\n"
+
+    def _build_total_mile_display(self):
+        GUI._string += f"\n\u001b[31;1mTotal Miles Driven: {trk.Truck.total_miles}\u001b[0m"
 
     def _build_time_display(self):
         GUI._string += f"\n\u001b[31;1mCurrent Time: {self.clock}\u001b[0m"
@@ -201,10 +209,16 @@ class GUI:
 
             if truck1_package is not None:
                 GUI._string += self._set_space(f"Package {truck1_package.id}: {truck1_package.address}", 60)
+            else:
+                GUI._string += self._set_space("", 60)
             if truck2_package is not None:
                 GUI._string += self._set_space(f"Package {truck2_package.id}: {truck2_package.address}", 60)
+            else:
+                GUI._string += self._set_space("", 60)
             if truck3_package is not None:
                 GUI._string += self._set_space(f"Package {truck3_package.id}: {truck3_package.address}", 60)
+            else:
+                GUI._string += self._set_space("", 60)
 
             GUI._string += "\n"
 
