@@ -106,7 +106,8 @@ class GUI:
                 GUI._string += f"{event}\n"
         else:
             GUI._string += "\n"
-            spliced_list = GUI.event_list[list_length - self.events::]
+            # spliced_list = GUI.event_list[list_length - self.events::]
+            spliced_list = GUI.event_list
             for event in spliced_list:
                 GUI._string += f"{event}\n"
 

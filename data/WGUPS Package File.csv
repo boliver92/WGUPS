@@ -7,7 +7,7 @@
 6,3060 Lester St,West Valley City,UT,84119,10:30 AM,88,Delayed on flight---will not arrive to depot until 9:05 am
 7,1330 2100 S,Salt Lake City,UT,84106,EOD,8,
 8,300 State St,Salt Lake City,UT,84103,EOD,9,
-9,300 State St,Salt Lake City,UT,84103,EOD,2,Wrong address listed
+9,410 S State St,Salt Lake City,UT,84103,EOD,2,Wrong address listed
 10,600 E 900 South,Salt Lake City,UT,84105,EOD,1,
 11,2600 Taylorsville Blvd,Salt Lake City,UT,84118,EOD,1,
 12,3575 W Valley Central Station bus Loop,West Valley City,UT,84119,EOD,1,
@@ -23,8 +23,8 @@
 22,6351 South 900 East,Murray,UT,84121,EOD,2,
 23,5100 South 2700 West,Salt Lake City,UT,84118,EOD,5,
 24,5025 State St,Murray,UT,84107,EOD,7,
-25,5383 South 900 East #104,Salt Lake City,UT,84117,10:30 AM,7,Delayed on flight---will not arrive to depot until 9:05 am
-26,5383 South 900 East #104,Salt Lake City,UT,84117,EOD,25,
+25,5383 South 900 East 104,Salt Lake City,UT,84117,10:30 AM,7,Delayed on flight---will not arrive to depot until 9:05 am
+26,5383 South 900 East 104,Salt Lake City,UT,84117,EOD,25,
 27,1060 Dalton Ave S,Salt Lake City,UT,84104,EOD,5,
 28,2835 Main St,Salt Lake City,UT,84115,EOD,7,Delayed on flight---will not arrive to depot until 9:05 am
 29,1330 2100 S,Salt Lake City,UT,84106,10:30 AM,2,

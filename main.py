@@ -107,7 +107,7 @@ def get_any_key_prompt():
     print("Loading information hud....")
 
 
-def main_loop(cli, data_controller, fast_mode=False):
+def main_loop(cli, data_controller, fast_mode=True):
     try:
         while True:
             escape_listener(cli)

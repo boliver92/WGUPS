@@ -20,9 +20,6 @@ def read_packages():
                     delivery_deadline=row["Delivery Deadline"],
                     weight=int(row["Mass KILO"]),
                     special_notes=row["Special Notes"])
-            print(row)
-            print(pkg.id)
-            print(pkg.address)
 
         csv_file.close()
 

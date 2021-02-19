@@ -40,6 +40,7 @@ class Package:
 
     # Class Variables
     package_list = []
+    available_packages = []
 
     def __init__(self, id: int, address: str, city: str, state: str, zip: int, delivery_deadline: str, weight: int, special_notes: str, delivery_status: DeliveryStatus = DeliveryStatus.LOADING):
         self.id = id
@@ -51,8 +52,9 @@ class Package:
         self.weight = weight
         self.special_notes = special_notes
         self.delivery_status = delivery_status
-
+        self.nearby_packages = []
         Package.package_list.append(self)
+        Package.available_packages.append(self)
 
         current_address_to_package_map = MapManager.address_to_package_map.get_or_default(self.address)
         if current_address_to_package_map is None:
