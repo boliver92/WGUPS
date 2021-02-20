@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from wgups.enums.delivery_status import DeliveryStatus
 from wgups.objects.hub import Hub
 from wgups.objects.truck import Truck
 from wgups.objects.package import Package
@@ -21,6 +22,9 @@ class DeliveryController:
     def __init__(self, clock: clk.Clock):
         self.clock = clock
         self.graph = Graph()
+        self.clock1 = clk.Clock()
+        self.clock2 = clk.Clock(545)
+        self.clock3 = clk.Clock()
 
     def start(self):
         """Loads the data needed for the program to function.
@@ -75,12 +79,11 @@ class DeliveryController:
         truck2 = Truck.truck_list[1]
         truck3 = Truck.truck_list[2]
         if truck1.active:
-            truck1.tick(self.graph, self.clock)
+            truck1.tick(self.graph, self.clock1)
         if truck2.active:
-            truck2.tick(self.graph, self.clock)
+            truck2.tick(self.graph, self.clock2)
         if truck3.active:
-            truck3.tick(self.graph, self.clock)
-        self.clock.refresh()
+            truck3.tick(self.graph, self.clock3)
 
     def _fire_special_events(self):
 
@@ -111,85 +114,83 @@ class DeliveryController:
         Time Complexity:
             O(1)
         """
-        if self.clock.hour >= 8 and self.special_events.get("8:00 AM") is False:
+        if self.clock1.hour >= 8 and self.special_events.get("8:00 AM") is False:
 
-            # Truck 1
-            Package.package_list[13].nearby_packages.append(Package.package_list[15])
-            Package.package_list[13].nearby_packages.append(Package.package_list[14])
-            Package.package_list[13].nearby_packages.append(Package.package_list[19])
-            Package.package_list[13].nearby_packages.append(Package.package_list[20])
-            Package.package_list[13].nearby_packages.append(Package.package_list[12])
-            Package.package_list[39].nearby_packages.append(Package.package_list[3])
-            Package.package_list[0].nearby_packages.append(Package.package_list[18])
-            Package.package_list[0].nearby_packages.append(Package.package_list[11])
+            Truck.load_packages(self.graph)
+            # # Truck 1
+            # Package.package_list[13].nearby_packages.append(Package.package_list[15])
+            # Package.package_list[13].nearby_packages.append(Package.package_list[14])
+            # Package.package_list[13].nearby_packages.append(Package.package_list[19])
+            # Package.package_list[13].nearby_packages.append(Package.package_list[20])
+            # Package.package_list[13].nearby_packages.append(Package.package_list[12])
+            # Package.package_list[39].nearby_packages.append(Package.package_list[3])
+            # Package.package_list[0].nearby_packages.append(Package.package_list[18])
+            # Package.package_list[0].nearby_packages.append(Package.package_list[11])
+            #
+            # # Truck 2
+            # Package.package_list[36].nearby_packages.append(Package.package_list[37])
+            # Package.package_list[36].nearby_packages.append(Package.package_list[8])
+            # Package.package_list[36].nearby_packages.append(Package.package_list[2])
+            # Package.package_list[29].nearby_packages.append(Package.package_list[9])
+            # Package.package_list[29].nearby_packages.append(Package.package_list[7])
+            # Package.package_list[29].nearby_packages.append(Package.package_list[2])
 
-            # Truck 2
-            Package.package_list[36].nearby_packages.append(Package.package_list[37])
-            Package.package_list[36].nearby_packages.append(Package.package_list[8])
-            Package.package_list[36].nearby_packages.append(Package.package_list[2])
-            Package.package_list[29].nearby_packages.append(Package.package_list[9])
-            Package.package_list[29].nearby_packages.append(Package.package_list[7])
-            Package.package_list[29].nearby_packages.append(Package.package_list[2])
-
-
-
-
-
-
-
-            # Package.package_list[13].nearby_packages = [
+            # truck1.packages = [
+            #     Package.package_list[13],
             #     Package.package_list[15],
             #     Package.package_list[14],
             #     Package.package_list[19],
             #     Package.package_list[20],
-            #     Package.package_list[18],
-            # ]
-            #
-            # Package.package_list[39].nearby_packages = [
-            #     Package.package_list[3]
-            # ]
-            #
-            # Package.package_list[0].nearby_packages = [
+            #     Package.package_list[12],
+            #     Package.package_list[39],
+            #     Package.package_list[3],
+            #     Package.package_list[0],
             #     Package.package_list[18],
             #     Package.package_list[11]
             #
             # ]
 
-            truck1.priority_packages.append(Package.package_list[13])
-            truck1.priority_packages.append(Package.package_list[30])
-            truck1.priority_packages.append(Package.package_list[39])
-            truck1.priority_packages.append(Package.package_list[0])
+            # for package in Package.package_list:
+            #     if package.delivery_deadline != "EOD":
+            #         truck1.packages.append(package)
 
-            for priority_package in truck1.priority_packages:
-                for nearby_package in priority_package.nearby_packages:
-                    truck1.packages.append(nearby_package)
-                truck1.packages.append(priority_package)
-
-            # truck2.priority_packages.append(Package.package_list[36])
-            # truck2.priority_packages.append(Package.package_list[29])
-
-
-
-            # for current_package in Package.package_list:
-            #     if current_package not in truck1.packages and current_package not in truck2.packages:
-            #         truck3.packages.append(current_package)
+            # truck2.packages = [
+            #     Package.package_list[36],
+            #     Package.package_list[37],
+            #     Package.package_list[8],
+            #     Package.package_list[2],
+            #     Package.package_list[2],
+            #     Package.package_list[5],
+            #     Package.package_list[9],
+            #
+            # ]
+            # truck3.packages = [
+            #     Package.package_list[29],
+            #     Package.package_list[7],
+            # ]
 
             truck1.toggle_status()
+            truck3.toggle_status()
 
+            for package in truck1.packages:
+                package.delivery_status = DeliveryStatus.LOADED
+
+            for package in truck3.packages:
+                package.delivery_status = DeliveryStatus.LOADED
 
             DeliveryController.special_events["8:00 AM"] = True
 
-        if (self.clock.hour > 9 or (self.clock.hour == 9 and self.clock.minute >= 5)) and self.special_events.get(
+        if (self.clock1.hour > 9 or (self.clock1.hour == 9 and self.clock1.minute >= 5)) and self.special_events.get(
                 "9:05 AM") is False:
 
             if not truck1.active or not truck3.active:
                 cli.GUI.add_event("Delayed packages received at 9:05 AM")
                 truck2.toggle_status()
                 DeliveryController.special_events["9:05 AM"] = True
-
-        if (self.clock.hour > 10 or (self.clock.hour == 10 and self.clock.minute >= 20)) and self.special_events.get(
-                "10:20 AM") is False:
-            cli.GUI.add_event("Package #9's address was corrected to 410 S State St.")
-            pkg = Package.package_list[8]
-            pkg.address = "410 S State St"
-            DeliveryController.special_events["10:20 AM"] = True
+        #
+        # if (self.clock.hour > 10 or (self.clock.hour == 10 and self.clock.minute >= 20)) and self.special_events.get(
+        #         "10:20 AM") is False:
+        #     cli.GUI.add_event("Package #9's address was corrected to 410 S State St.")
+        #     pkg = Package.package_list[8]
+        #     pkg.address = "410 S State St"
+        #     DeliveryController.special_events["10:20 AM"] = True
