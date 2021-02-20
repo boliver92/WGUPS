@@ -1,13 +1,14 @@
-from wgups.ds.graph import Graph, dijkstra_shortest_path, get_shortest_path
+from wgups.controller.route_controller import RouteController
+from wgups.ds.hashmap import Hashmap
 from wgups.ds.vertex import Vertex
-from wgups.objects.clock import Clock
-from wgups.objects.hub import Hub
-from wgups.objects.package import Package
-from wgups.objects.map_manager import MapManager
-from wgups.enums.truck_status import TruckStatus
-import wgups.ui.cli as cli
 from wgups.enums.delivery_status import DeliveryStatus
-import operator
+from wgups.enums.truck_status import TruckStatus
+from wgups.objects.clock import Clock
+import wgups.ui.cli
+
+
+class Truck(object):
+    pass
 
 
 class Truck:
@@ -33,163 +34,70 @@ class Truck:
             driven by all trucks
     """
 
-    truck_list = []
+    master_truck_list = []
     total_miles: float = 0.0
     AVERAGE_MPH = 18.0
+    _find_by_id = Hashmap()
 
     def __init__(self, id):
-        self.id = id
-        self.packages = []
-        self.current_hub = MapManager.name_to_hub_map.get("Western Governors University")
-        self.truck_miles: float = 0.0
+        self.id: int = id
         self.status: TruckStatus = TruckStatus.INACTIVE
-        self.current_package = None
-        self.current_path = []
-        self.active = False
-        self.tick_count = 1
+        self.miles: float = 0.0
+        self.current_vertex: Vertex = Vertex.find_by_label("Western Governors University")
+        self.path = []
+        self.packages = []
 
-        Truck.truck_list.append(self)
+        Truck.master_truck_list.append(self)
+        Truck._find_by_id.put(self.id, self)
 
-    def toggle_status(self):
-        """
-        Switches the truck status between active and inactive.
-
-        For the sake of this program, truck3 is toggled to active as soon as truck 1 or 2 are inactive.
-
-        Space Complexity:
-            O(1)
-
-        Time Complexity:
-            O(1)
-        """
-        if not self.active:
-            self.status = TruckStatus.ACTIVE
-            self.active = True
-        else:
-            self.status = TruckStatus.INACTIVE
-            self.active = False
-
-        cli.GUI.add_event(f"\u001b[34mTruck {self.id}\u001b[0m is now {self.status.value}")
-
-    def has_package(self):
-        return len(self.packages) > 0
-
-    def travel_to(self, graph: Graph, clock: Clock, path_node: Vertex):
-
-        current_vertex = self.current_hub.vertex
-        distance_traveled = graph.edge_weights[(current_vertex, path_node)]
-        clock.simulate_minutes(distance_traveled)
-        self.current_hub = MapManager.address_to_hub_map.get(path_node.address)
-        self.truck_miles += distance_traveled
-        Truck.total_miles += distance_traveled
-
-    def create_deliver_message(self, package: Package, clock: Clock):
-        cli.GUI.add_event(
-            f"{clock} / Truck {self.id}: Package {package.id} was delivered to {package.address}. Deadline {package.delivery_deadline}")
-
-    def deliver_package(self, graph: Graph, clock: Clock):
-
-        for package in self.packages:
-            if package.address == self.current_hub.address:
-                self.create_deliver_message(package, clock)
-                package.delivery_status = DeliveryStatus.DELIVERED
-                self.packages.remove(package)
-
-    def find_path(self, graph: Graph):
-
-        start_vertex = self.current_hub.vertex
-        dijkstra_shortest_path(graph, start_vertex)
-        end_vertex = None
-        delivery_addresses = []
-        for package in self.packages:
-            delivery_addresses.append(package.address)
-            if package.delivery_deadline == "9:00 AM":
-                end_vertex = MapManager.address_to_hub_map.get(package.address).vertex
-                self.current_path = get_shortest_path(start_vertex, end_vertex)
-                return
-            if package.delivery_deadline == "10:30 AM":
-                end_vertex = MapManager.address_to_hub_map.get(package.address).vertex
-                self.current_path = get_shortest_path(start_vertex, end_vertex)
-                return
-        for vertex in Vertex.vertex_list:
-            if vertex.address in delivery_addresses:
-                if end_vertex is None:
-                    end_vertex = vertex
-                else:
-                    if vertex.distance < end_vertex.distance:
-                        end_vertex = vertex
-
-        self.current_path = get_shortest_path(start_vertex, end_vertex)
+    def is_active(self) -> bool:
+        return self.status == TruckStatus.ACTIVE
 
     @classmethod
-    def load_packages(cls, graph):
+    def find_by_id(cls, id: int) -> Truck:
+        """
+       Takes a int id of a Truck object to be found. The search
+       method uses a hashmap
+       :param id: The id of the Truck to be found
+       :return: Truck object if it is found. Otherwise, None.
 
-        connected_packages = [13, 14, 15, 16, 19, 20]
-        truck1 = Truck.truck_list[0]
-        truck2 = Truck.truck_list[1]
-        truck3 = Truck.truck_list[2]
-        current_truck = truck1
+       Space Complexity:
+           O(1)
 
-        for package in Package.package_list:
-            if ("Delayed" in package.special_notes or "truck" in package.special_notes) and "EOD" in package.delivery_deadline and (package not in truck1.packages and package not in truck3.packages and len(truck2.packages) < 16):
-                truck2.packages.append(package)
-                if package.id in connected_packages:
-                    for id_number in connected_packages:
-                        truck2.packages.append(Package.package_list[id_number-1])
-                for comp_package in Package.package_list:
-                    if comp_package.address == Package.package_list and (comp_package not in truck1.packages and comp_package not in truck3.packages) and "EOD" in comp_package.delivery_deadline and len(truck2.packages) < 16:
-                        truck2.packages.append(comp_package)
-                    if comp_package not in truck1.packages and comp_package not in truck3.packages and comp_package not in truck2.packages and "EOD" in comp_package.delivery_deadline and len(truck2.packages) < 16:
-                        start_hub = MapManager.address_to_hub_map.get(package.address)
-                        start_vertex = start_hub.vertex
-                        dijkstra_shortest_path(graph, start_vertex)
-                        comp_package_hub = MapManager.address_to_hub_map.get(comp_package.address)
-                        comp_package_vertex = comp_package_hub.vertex
-                        distance = graph.edge_weights[(start_vertex, comp_package_vertex)]
-                        if distance < 2.0:
-                            truck2.packages.append(comp_package)
-            if ("9:00 AM" in package.delivery_deadline or "10:30 AM" in package.delivery_deadline) and ("Delay" not in package.special_notes and "truck" not in package.special_notes) and (package not in truck1.packages and package not in truck2.packages and package not in truck3.packages) and len(current_truck.packages) < 16:
-                current_truck.packages.append(package)
-                if package.id in connected_packages:
-                    for id_number in connected_packages:
-                        current_truck.packages.append(Package.package_list[id_number-1])
-                for comp_package in Package.package_list:
-                    if comp_package.address == Package.package_list and (comp_package not in truck1.packages and comp_package not in truck3.packages and comp_package not in truck2.packages) and len(current_truck.packages) < 16:
-                        current_truck.packages.append(comp_package)
-                    if comp_package not in truck1.packages and comp_package not in truck3.packages and comp_package not in truck2.packages and len(current_truck.packages) < 16:
-                        start_hub = MapManager.address_to_hub_map.get(package.address)
-                        start_vertex = start_hub.vertex
-                        dijkstra_shortest_path(graph, start_vertex)
-                        comp_package_hub = MapManager.address_to_hub_map.get(comp_package.address)
-                        comp_package_vertex = comp_package_hub.vertex
-                        distance = graph.edge_weights[(start_vertex, comp_package_vertex)]
-                        if distance < 2.0:
-                            current_truck.packages.append(comp_package)
-                if current_truck == truck1:
-                    current_truck = truck3
-                else:
-                    current_truck = truck1
+       Time Complexity:
+           O(1)
+       """
+        return Truck._find_by_id.get(id)
 
-        # for package in Package.package_list:
-        #     if "Delayed" in package.special_notes or "truck" in package.special_notes:
-        #         truck2.packages.append(package)
-        #         for comp_package in Package.package_list:
-        #             if comp_package.address == package.address and (comp_package not in truck1.packages and comp_package not in truck2.packages and comp_package not in truck3.packages):
-        #                 current_truck.packages.append(comp_package)
+    def deliver_package(self, clock):
 
-    def tick(self, graph: Graph, clock: Clock):
+        for package in self.packages:
+            if package.address == self.current_vertex.address:
+                self.packages.remove(package)
+                package.delivery_status = DeliveryStatus.DELIVERED
+                wgups.ui.cli.GUI.add_event(
+                    f"{clock} / {self.id} : Package {package.id} Delivered to {package.address}. Deadline: {package.delivery_deadline}")
 
-        self.deliver_package(graph, clock)
+    def tick(self, route_controller: RouteController, clock: Clock):
+        self.deliver_package(clock)
 
-        if not self.has_package():
+        try:
+            self.travel_to(route_controller, self.path[0], clock)
+        except IndexError:
             self.toggle_status()
-            return
 
-        if len(self.current_path) <= 0:
-            self.find_path(graph)
+        self.deliver_package(clock)
 
-        if len(self.current_path) <= 0:
-            return
+    def travel_to(self, route_controller: RouteController, end_vertex: Vertex, clock: Clock):
+        distance = route_controller.edge_weights[(self.current_vertex, end_vertex)]
+        self.miles += distance
+        Truck.total_miles += distance
+        self.current_vertex = end_vertex
+        clock.simulate_travel_time(distance)
+        self.path.remove(self.current_vertex)
 
-        self.travel_to(graph, clock, self.current_path.pop())
-        self.deliver_package(graph, clock)
+    def toggle_status(self):
+        if self.status == TruckStatus.INACTIVE:
+            self.status = TruckStatus.ACTIVE
+        else:
+            self.status = TruckStatus.INACTIVE

@@ -1,7 +1,9 @@
-from dataclasses import dataclass
-from typing import ClassVar
+from wgups.ds.hashmap import Hashmap
 from wgups.enums.delivery_status import DeliveryStatus
-from wgups.objects.map_manager import MapManager
+
+
+class Package(object):
+    pass
 
 
 class Package:
@@ -39,8 +41,8 @@ class Package:
     """
 
     # Class Variables
-    package_list = []
-    available_packages = []
+    master_package_list = []
+    _find_by_id = Hashmap()
 
     def __init__(self, id: int, address: str, city: str, state: str, zip: int, delivery_deadline: str, weight: int, special_notes: str, delivery_status: DeliveryStatus = DeliveryStatus.LOADING):
         self.id = id
@@ -52,13 +54,11 @@ class Package:
         self.weight = weight
         self.special_notes = special_notes
         self.delivery_status = delivery_status
-        self.nearby_packages = []
-        Package.package_list.append(self)
-        Package.available_packages.append(self)
 
-        current_address_to_package_map = MapManager.address_to_package_map.get_or_default(self.address)
-        if current_address_to_package_map is None:
-            MapManager.address_to_package_map.put(self.address, [self])
-        else:
-            current_address_to_package_map.append(self)
-            MapManager.address_to_package_map.put(self.address, current_address_to_package_map)
+        Package._find_by_id.put(self.id, self)
+
+        Package.master_package_list.append(self)
+
+    @classmethod
+    def find_by_id(cls, id: int) -> Package:
+        return Package._find_by_id.get(id)

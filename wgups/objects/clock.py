@@ -122,8 +122,8 @@ class Clock:
         else:
             return f"{strHr}:{self.minute} {self.meridian}"
 
-    def simulate_minutes(self, miles_to_simulate):
-        minutes_to_simulate = int((60 / 18) * miles_to_simulate)
+    def simulate_travel_time(self, miles_to_simulate):
+        minutes_to_simulate = int((60 // 18) * miles_to_simulate)
         self.add_minutes(minutes_to_simulate)
 
     def refresh(self):

@@ -123,7 +123,7 @@ def main_loop(cli, data_controller, fast_mode=False):
                 break
             try:
                 if 0 < int(package_id) < 41:
-                    cli.show_package(Package.package_list[int(package_id) - 1])
+                    cli.show_package(Package.master_package_list[int(package_id) - 1])
                     get_any_key_prompt()
                     break
                 else:
