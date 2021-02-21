@@ -69,7 +69,7 @@ class Truck:
        """
         return Truck._find_by_id.get(id)
 
-    def deliver_package(self, clock):
+    def deliver_package(self, clock) -> bool:
 
         for package in self.packages:
             if package.address == self.current_vertex.address:
@@ -77,23 +77,46 @@ class Truck:
                 package.delivery_status = DeliveryStatus.DELIVERED
                 wgups.ui.cli.GUI.add_event(
                     f"{clock} / {self.id} : Package {package.id} Delivered to {package.address}. Deadline: {package.delivery_deadline}")
+                return True
+
+        return False
+
+
+    def has_packages(self) -> bool:
+        return len(self.packages) > 0
 
     def tick(self, route_controller: RouteController, clock: Clock):
-        self.deliver_package(clock)
+        while self.deliver_package(clock):
+            pass
 
-        try:
-            self.travel_to(route_controller, self.path[0], clock)
-        except IndexError:
+        if len(self.path):
+            try:
+                self.travel_to_closest_vertex(route_controller, clock)
+            except IndexError:
+                if not self.has_packages():
+                    self.toggle_status()
+        elif not self.has_packages() and not len(self.path):
             self.toggle_status()
 
         self.deliver_package(clock)
 
-    def travel_to(self, route_controller: RouteController, end_vertex: Vertex, clock: Clock):
-        distance = route_controller.edge_weights[(self.current_vertex, end_vertex)]
-        self.miles += distance
-        Truck.total_miles += distance
-        self.current_vertex = end_vertex
-        clock.simulate_travel_time(distance)
+    def travel_to_closest_vertex(self, route_controller: RouteController, clock: Clock):
+
+        min_distance = 1000.0
+        next_vertex = None
+
+        for possible_vertex in self.path:
+            if possible_vertex == self.current_vertex:
+                continue
+            distance = route_controller.edge_weights[(self.current_vertex, possible_vertex)]
+            if distance < min_distance:
+                min_distance = distance
+                next_vertex = possible_vertex
+
+        self.miles += min_distance
+        Truck.total_miles += min_distance
+        self.current_vertex = next_vertex
+        clock.simulate_travel_time(min_distance)
         self.path.remove(self.current_vertex)
 
     def toggle_status(self):

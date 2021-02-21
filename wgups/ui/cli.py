@@ -74,7 +74,6 @@ class GUI:
         self._build_truck_display()
         self._build_event_display()
         self._build_total_mile_display()
-        self._build_time_display()
         self._build_user_input_display()
         self.clear()
         self.display()
@@ -143,9 +142,6 @@ class GUI:
 
     def _build_total_mile_display(self):
         GUI._string += f"\n\u001b[31;1mTotal Miles Driven: {trk.Truck.total_miles}\u001b[0m"
-
-    def _build_time_display(self):
-        GUI._string += f"\n\u001b[31;1mCurrent Time: {self.clock}\u001b[0m"
 
     def _build_truck_display(self):
         """

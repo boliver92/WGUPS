@@ -15,7 +15,7 @@ class Vertex:
         self.address = address
 
         Vertex._find_by_label.put(self.label, self)
-        Vertex._find_by_address.put(self.label, self)
+        Vertex._find_by_address.put(self.address, self)
 
     @classmethod
     def find_by_label(cls, label: str) -> Vertex:

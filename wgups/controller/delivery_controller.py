@@ -13,7 +13,7 @@ class DeliveryController:
         "8:00 AM": False,
         "9:05 AM": False,
         "10:20 AM": False,
-        "Delay" : False
+        "Delay": False
     }
 
     def __init__(self, clock: Clock):
@@ -57,6 +57,7 @@ class DeliveryController:
         read_packages()
         create_trucks()
         connect_vertices(route_controller=self.route_controller)
+        RouteController.visited_vertices.append(Vertex.find_by_label("Western Governors University"))
 
     def tick(self):
         """
@@ -90,12 +91,12 @@ class DeliveryController:
 
             truck3 = Truck.find_by_id(3)
             truck1.toggle_status()
-            # truck2.toggle_status()
             truck3.toggle_status()
 
             self.special_events["8:00 AM"] = True
 
-        if ((self.clock1.hour > 9 or self.clock3.hour > 9) or ((self.clock1.hour == 9 and self.clock1.minute >= 5) or (self.clock3.hour == 9 and self.clock3.minute >= 5))) and self.special_events.get(
+        if ((self.clock1.hour > 9 or self.clock3.hour > 9) or ((self.clock1.hour == 9 and self.clock1.minute >= 5) or (
+                self.clock3.hour == 9 and self.clock3.minute >= 5))) and self.special_events.get(
                 "9:05 AM") is False:
             truck1 = Truck.find_by_id(1)
             truck3 = Truck.find_by_id(3)
@@ -107,8 +108,6 @@ class DeliveryController:
                     if "Delayed" in package.special_notes:
                         package.delivery_status = DeliveryStatus.LOADING
                 self.special_events["Delay"] = True
-
-
 
             if not truck1.is_active() and truck3.is_active() and self.clock1.total_minutes > self.clock2.total_minutes:
                 self.clock2.add_minutes(self.clock1.total_minutes - self.clock2.total_minutes)
@@ -135,6 +134,14 @@ class DeliveryController:
         truck2 = Truck.find_by_id(2)
         truck3 = Truck.find_by_id(3)
 
+        connected_packages = [13, 14, 15, 19, 16, 20]
+
+        for package_id in connected_packages:
+            package = Package.find_by_id(package_id)
+            package_vertex = Vertex.find_by_address(package.address)
+            truck3.packages.append(package)
+            truck3.path.append(package_vertex)
+
         next_destination = truck1.current_vertex
         while len(truck1.packages) < 16:
             truck = truck1
@@ -148,10 +155,14 @@ class DeliveryController:
                         package.delivery_status = DeliveryStatus.LOADED
                         if next_destination not in truck2.path:
                             truck2.path.append(next_destination)
-                    elif package.address == next_destination.address and ("Delay" not in package.special_notes and "truck" not in package.special_notes):
+                    elif package.address == next_destination.address and (
+                            "Delay" not in package.special_notes and "truck" not in package.special_notes) and package not in truck.packages and package not in truck3.packages and package not in truck2.packages:
                         truck.packages.append(package)
                         package.delivery_status = DeliveryStatus.LOADED
-                    elif package.address == next_destination.address:
+                        package_destination = Vertex.find_by_address(package.address)
+                        if package_destination not in truck.path:
+                            truck.path.append(package_destination)
+                    elif package.address == next_destination.address and package.id not in connected_packages:
                         truck2.packages.append(package)
                         if next_destination not in truck2.path:
                             truck2.path.append(next_destination)
@@ -176,10 +187,13 @@ class DeliveryController:
                         if next_destination not in truck2.path:
                             truck2.path.append(next_destination)
                     elif package.address == next_destination.address and (
-                            "Delay" not in package.special_notes and "truck" not in package.special_notes):
+                            "Delay" not in package.special_notes and "truck" not in package.special_notes) and package not in truck.packages and package not in truck1.packages and package not in truck2.packages:
                         truck.packages.append(package)
                         package.delivery_status = DeliveryStatus.LOADED
-                    elif package.address == next_destination.address:
+                        package_destination = Vertex.find_by_address(package.address)
+                        if package_destination not in truck.path:
+                            truck.path.append(package_destination)
+                    elif package.address == next_destination.address and package.id not in connected_packages:
                         truck2.packages.append(package)
                         if next_destination not in truck2.path:
                             truck2.path.append(next_destination)
