@@ -60,9 +60,7 @@ class DeliveryController:
         RouteController.visited_vertices.append(Vertex.find_by_label("Western Governors University"))
 
     def tick(self):
-        """
-        Calls each function required to update the application
-        logic/data.
+        """Calls each function required to update the application logic/data.
 
         :return: None
 
@@ -84,7 +82,20 @@ class DeliveryController:
             truck3.tick(self.route_controller, self.clock3)
 
     def _fire_special_events(self):
+        """ Used to activate special events when a Truck object's clock meets certain requirements
 
+        If a active truck's clock reaches certain hour/minute threshold
+        and the DeliveryController.special_events dict value is
+        False for the key, then the event will fire.
+
+        Space Complexity
+            O(1)
+
+        Time Complexity
+            O(n)
+        """
+
+        # Load trucks and make truck 1 and 3 active at 8:00 AM.
         if self.clock.hour >= 8 and self.special_events.get("8:00 AM") is False:
             self._load_trucks(self.route_controller)
             truck1 = Truck.find_by_id(1)
@@ -95,6 +106,8 @@ class DeliveryController:
 
             self.special_events["8:00 AM"] = True
 
+        # At 9:05 AM, the Delayed packages are received. If truck 1 or
+        # truck 3 are inactive. Truck 2 will be changed to active.
         if ((self.clock1.hour > 9 or self.clock3.hour > 9) or ((self.clock1.hour == 9 and self.clock1.minute >= 5) or (
                 self.clock3.hour == 9 and self.clock3.minute >= 5))) and self.special_events.get(
                 "9:05 AM") is False:
@@ -102,25 +115,32 @@ class DeliveryController:
             truck3 = Truck.find_by_id(3)
             truck2 = Truck.find_by_id(2)
 
+            # Delayed Packages Event Handler.
             if self.special_events.get("Delay") is False:
-                wgups.ui.cli.GUI.add_event("Received Delayed Packages")
+                delayClock = Clock(545)
+                wgups.ui.cli.GUI.add_event((f"{delayClock}: Received Delayed Packages", delayClock.total_minutes))
                 for package in truck2.packages:
                     if "Delayed" in package.special_notes:
                         package.delivery_status = DeliveryStatus.LOADING
                 self.special_events["Delay"] = True
 
+            # Activates truck 2 is truck 1 is inactive.
             if not truck1.is_active() and truck3.is_active() and self.clock1.total_minutes > self.clock2.total_minutes:
                 self.clock2.add_minutes(self.clock1.total_minutes - self.clock2.total_minutes)
                 for package in truck2.packages:
                     package.delivery_status = DeliveryStatus.LOADED
                 truck2.toggle_status()
                 self.special_events["9:05 AM"] = True
+
+            # Activates truck 2 is truck 3 is inactive.
             elif truck1.is_active() and not truck3.is_active() and self.clock3.total_minutes > self.clock2.total_minutes:
                 self.clock2.add_minutes(self.clock3.total_minutes - self.clock2.total_minutes)
                 for package in truck2.packages:
                     package.delivery_status = DeliveryStatus.LOADED
                 truck2.toggle_status()
                 self.special_events["9:05 AM"] = True
+
+            # Activates truck2 is either truck1 or truck3 are inactive.
             elif not truck1.is_active() or not truck3.is_active():
                 for package in truck2.packages:
                     package.delivery_status = DeliveryStatus.LOADED
@@ -129,7 +149,23 @@ class DeliveryController:
 
     @staticmethod
     def _load_trucks(route_controller: RouteController):
+        """Loads each truck based on the nearest neighbor algorithm.
 
+        This method loads the packages utilizing the nearest neighbor
+        algorithm to load the next nearest package onto the truck. The
+        method is designed that Truck1 is loaded first, Truck3 is
+        loaded second. Truck 2 is loaded based on special_notes
+        indicating that the package is delayed or must be on truck2 as
+        they are discovered.
+
+        :param route_controller: The RouteController that the vertices are located in.
+
+        Space Complexity
+            O(1)
+
+        Time Complexity
+            O(n^2)
+        """
         truck1 = Truck.find_by_id(1)
         truck2 = Truck.find_by_id(2)
         truck3 = Truck.find_by_id(3)

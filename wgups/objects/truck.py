@@ -50,8 +50,31 @@ class Truck:
         Truck.master_truck_list.append(self)
         Truck._find_by_id.put(self.id, self)
 
-    def is_active(self) -> bool:
-        return self.status == TruckStatus.ACTIVE
+    def deliver_package(self, clock: Clock) -> bool:
+        """Delivers packages in the truck.package list if the address
+        matches the truck's current address.
+
+        :param clock: The clock
+         object to represent the current time.
+        :return: True if the package is delivered, else False.
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(n)
+        """
+
+        for package in self.packages:
+            if package.address == self.current_vertex.address:
+                self.packages.remove(package)
+                package.delivery_status = DeliveryStatus.DELIVERED
+                wgups.ui.cli.GUI.add_event(
+                    (
+                        f"{clock} / {self.id} : Package {package.id} Delivered to {package.address}. Deadline: {package.delivery_deadline}",
+                        clock.total_minutes))
+                return True
+
+        return False
 
     @classmethod
     def find_by_id(cls, id: int) -> Truck:
@@ -69,23 +92,44 @@ class Truck:
        """
         return Truck._find_by_id.get(id)
 
-    def deliver_package(self, clock) -> bool:
-
-        for package in self.packages:
-            if package.address == self.current_vertex.address:
-                self.packages.remove(package)
-                package.delivery_status = DeliveryStatus.DELIVERED
-                wgups.ui.cli.GUI.add_event(
-                    f"{clock} / {self.id} : Package {package.id} Delivered to {package.address}. Deadline: {package.delivery_deadline}")
-                return True
-
-        return False
-
-
     def has_packages(self) -> bool:
+        """ Returns True if the Truck objects package list has a package in it, otherwise False
+
+        :return: Returns True if the Truck objects package list has a
+        package in it, otherwise False
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
         return len(self.packages) > 0
 
+    def is_active(self) -> bool:
+        """
+        :return: Returns True if the truck status is
+        TruckStatus.ACTIVE, otherwise False
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
+        return self.status == TruckStatus.ACTIVE
+
     def tick(self, route_controller: RouteController, clock: Clock):
+        """The main method of the Truck class that handles the truck delivery logic.
+
+        :param route_controller:
+            The Graph that is being used to handle the routing and vertices.
+        :param clock:
+            The clock used to represent the Truck's time.
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(n)
+        """
         while self.deliver_package(clock):
             pass
 
@@ -100,9 +144,39 @@ class Truck:
 
         self.deliver_package(clock)
 
-    def travel_to_closest_vertex(self, route_controller: RouteController, clock: Clock):
+    def toggle_status(self):
+        """Changes the truck status based on it current status.
 
-        min_distance = 1000.0
+        If the truck status is inactive, it will change it to active.
+        Otherwise the status will be changed to inactive.
+
+        Space Complexity
+            O(1)
+
+        Time Complexity
+            O(1)
+        """
+        if self.status == TruckStatus.INACTIVE:
+            self.status = TruckStatus.ACTIVE
+        else:
+            self.status = TruckStatus.INACTIVE
+
+    def travel_to_closest_vertex(self, route_controller: RouteController, clock: Clock):
+        """ Changes the Truck object's current vertex to the nearest neighbor and updates the miles and clock time
+
+        :param route_controller: The graph that contains the vertices.
+        :param clock: The clock that is keeping time.
+
+        Space Complexity
+            O(1)
+
+        Time Complexity
+            O(n)
+        """
+
+        min_distance = 1000.0  # Used to keep the current min_distance.
+        # Initialized at 1000 to make sure that it will be higher than
+        # any other distance
         next_vertex = None
 
         for possible_vertex in self.path:
@@ -118,9 +192,3 @@ class Truck:
         self.current_vertex = next_vertex
         clock.simulate_travel_time(min_distance)
         self.path.remove(self.current_vertex)
-
-    def toggle_status(self):
-        if self.status == TruckStatus.INACTIVE:
-            self.status = TruckStatus.ACTIVE
-        else:
-            self.status = TruckStatus.INACTIVE

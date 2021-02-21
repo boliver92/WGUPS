@@ -11,12 +11,18 @@ class Hashmap:
             self.hashmap.append([])
 
     def put(self, key, value):
-        """
+        """Inserts a key, value pair into the hashmap.
+
         Inserts a key, value pair into the hashmap. If the key already
         exists in the hashmap, it will be overridden.
 
         :param key: The key to be searched
         :param value: The value to be associated with the key
+
+        Space Complexity
+            O(n)
+        Time Complexity
+            O(Log(n))
         """
 
         # Obtains the index of bucket list that should contain the key
@@ -47,6 +53,11 @@ class Hashmap:
 
         :param key: The key to be searched
         :return: value of the key if the key exists. Otherwise, None.
+
+        Space Complexity
+            O(n)
+        Time Complexity
+            O(Log(n))
         """
 
         # Obtains the index of bucket list that should contain the key
@@ -71,6 +82,11 @@ class Hashmap:
         :param default: The value to be returned if the key is not found.
         :return: value of the key if the key exists. Otherwise, the
         default value will be returned.
+
+        Space Complexity
+            O(n)
+        Time Complexity
+            O(Log(n))
         """
 
         # Obtains the index of bucket list that should contain the key
@@ -97,6 +113,11 @@ class Hashmap:
 
         :param key: The key of the key, value pair.
         :return: True if the key was found and removed. Otherwise, False.
+
+        Space Complexity
+            O(n)
+        Time Complexity
+            O(Log(n))
         """
 
         # Obtains the index of bucket list that should contain the key

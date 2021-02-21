@@ -54,6 +54,7 @@ class Package:
         self.weight = weight
         self.special_notes = special_notes
         self.delivery_status = delivery_status
+        self.delivery_time: str = None
 
         Package._find_by_id.put(self.id, self)
 
@@ -61,4 +62,18 @@ class Package:
 
     @classmethod
     def find_by_id(cls, id: int) -> Package:
+        """ Returns the package with the associated package ID.
+
+        Uses a hashmap to search the key and returns the value. The key
+        is the package ID to be searched. If the key is found, the
+        value is the package object associated with tbe key
+
+        :param id: int ID of the package to be found.
+        :return: Package if the ID is found. Otherwise none.
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
         return Package._find_by_id.get(id)

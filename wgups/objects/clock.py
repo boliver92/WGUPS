@@ -1,6 +1,5 @@
 class Clock:
-    """
-    Class used to represent and simulate time.
+    """Class used to represent and simulate time.
 
     The class takes the total minutes elapsed and determines the
     current time. For the purpose of this program, the class is
@@ -78,27 +77,22 @@ class Clock:
         else:
             self.meridian = "AM"
 
-    def __str__(self):
+    def refresh(self):
+        """Resets the clock to match the static Clock.max_min variable and resets the Clock.max_min to 0
+
+        This method is primarily used to synchronize multiple clocks to
+        reflect the latest time
+
         """
-        Displays the Clock instance as a "HH:MM AM/PM" string
-
-        :return: "HH:MM AM/PM"
-
-        Space Complexity
-            O(1)
-
-        Time Complexity
-            O(1)
-        """
-        if self.hour >= 13:
-            str_hr = self.hour % 12
-        else:
-            str_hr = self.hour
-
-        if self.minute < 10:
-            return f"{str_hr}:0{self.minute} {self.meridian}"
-        else:
-            return f"{str_hr}:{self.minute} {self.meridian}"
+        if Clock.max_min > self.total_minutes:
+            self.total_minutes = Clock.max_min
+            self.minute = int(self.total_minutes % 60)
+            self.hour = int((self.total_minutes // 60) % 24)
+            if self.hour >= 12:
+                self.meridian = "PM"
+            else:
+                self.meridian = "AM"
+        Clock.max_min = 0
 
     def __repr__(self):
         """
@@ -122,17 +116,41 @@ class Clock:
         else:
             return f"{strHr}:{self.minute} {self.meridian}"
 
-    def simulate_travel_time(self, miles_to_simulate):
-        minutes_to_simulate = int((60 // 18) * miles_to_simulate)
+    def simulate_travel_time(self, miles_to_simulate, average_mph=18):
+        """Increases the clock time based on the amount of miles traveled
+
+        The method takes in the number of miles driven and it is used
+        to determine the time elapsed during travel based on the
+        average_mph.
+
+        :param miles_to_simulate:
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
+        minutes_to_simulate = int((60 // average_mph) * miles_to_simulate)
         self.add_minutes(minutes_to_simulate)
 
-    def refresh(self):
-        if Clock.max_min > self.total_minutes:
-            self.total_minutes = Clock.max_min
-            self.minute = int(self.total_minutes % 60)
-            self.hour = int((self.total_minutes // 60) % 24)
-            if self.hour >= 12:
-                self.meridian = "PM"
-            else:
-                self.meridian = "AM"
-        Clock.max_min = 0
+    def __str__(self):
+        """
+        Displays the Clock instance as a "HH:MM AM/PM" string
+
+        :return: "HH:MM AM/PM"
+
+        Space Complexity
+            O(1)
+
+        Time Complexity
+            O(1)
+        """
+        if self.hour >= 13:
+            str_hr = self.hour % 12
+        else:
+            str_hr = self.hour
+
+        if self.minute < 10:
+            return f"{str_hr}:0{self.minute} {self.meridian}"
+        else:
+            return f"{str_hr}:{self.minute} {self.meridian}"
