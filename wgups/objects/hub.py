@@ -1,7 +1,4 @@
-from dataclasses import dataclass
-
 from wgups.ds.hashmap import Hashmap
-from wgups.ds.vertex import Vertex
 
 
 class Hub(object):

@@ -68,9 +68,14 @@ class Truck:
             if package.address == self.current_vertex.address:
                 self.packages.remove(package)
                 package.delivery_status = DeliveryStatus.DELIVERED
+                package.set_last_status_update(clock)
                 wgups.ui.cli.GUI.add_event(
                     (
-                        f"{clock} / {self.id} : Package {package.id} Delivered to {package.address}. Deadline: {package.delivery_deadline}",
+                        f"{clock} / {self} : {package} Delivered to {package.address}. Deadline: {package.delivery_deadline}",
+                        clock.total_minutes))
+                package.add_event(
+                    (
+                        f"{clock} / {self} : {package} Delivered to {package.address}. Deadline: {package.delivery_deadline}",
                         clock.total_minutes))
                 return True
 
@@ -192,3 +197,6 @@ class Truck:
         self.current_vertex = next_vertex
         clock.simulate_travel_time(min_distance)
         self.path.remove(self.current_vertex)
+
+    def __repr__(self):
+        return f"\u001b[36mTruck {self.id}\u001b[0m"

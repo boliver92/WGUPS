@@ -5,8 +5,6 @@ import sys
 import wgups.objects.clock as clk
 import wgups.objects.package as pkg
 import wgups.objects.truck as trk
-from wgups.objects.hub import Hub
-
 
 class GUI:
     """A class used to represent the command-line interface GUI
@@ -101,9 +99,11 @@ class GUI:
         """
         for i, package in enumerate(pkg.Package.master_package_list):
             # TODO: Provide kwargs to further set design options
+            package_string = f"{package}: "
+            delivery_status_string = f"{package.delivery_status.value}"
             GUI._string += self._set_space(
-                f"{self._set_space(f'Package {package.id}:', 11)} {package.delivery_status.value}",
-                45
+                f"{self._set_space(package_string, 11)} {delivery_status_string}",
+                60
             )
             if (i + 1) % new_line_index == 0:
                 GUI._string += "\n"
@@ -128,7 +128,10 @@ class GUI:
                        f"Delivery City: {package.city}\n" \
                        f"Delivery Zip Code: {package.zip}\n" \
                        f"Package Weight: {package.weight}\n" \
-                       f"Delivery Status: {package.delivery_status.value}\n"
+                       f"Delivery Status: {package.last_status_update}\n" \
+                       f"------Events------\n"
+        for event, event_time in package.event_list:
+            GUI._string+=f"{event}\n"
 
     @staticmethod
     def _build_total_mile_display():
@@ -148,7 +151,7 @@ class GUI:
 
         # Creates the underlined header for each truck.
         for truck in trk.Truck.master_truck_list:
-            GUI._string += self._set_space(f"\033[4mTruck {truck.id}\033[0m", 68)
+            GUI._string += self._set_space(f"{truck}", 68)
 
         GUI._string += "\n"
 
@@ -157,7 +160,7 @@ class GUI:
         GUI._string += "\n"
 
         for truck in trk.Truck.master_truck_list:
-            GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 78)
+            GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 69)
         GUI._string += "\n"
 
         for truck in trk.Truck.master_truck_list:
@@ -192,15 +195,15 @@ class GUI:
                 break
 
             if truck1_package is not None:
-                GUI._string += self._set_space(f"Package {truck1_package.id}: {truck1_package.address}", 60)
+                GUI._string += self._set_space(f"{truck1_package}: {truck1_package.address}", 60)
             else:
                 GUI._string += self._set_space("", 60)
             if truck2_package is not None:
-                GUI._string += self._set_space(f"Package {truck2_package.id}: {truck2_package.address}", 60)
+                GUI._string += self._set_space(f"{truck2_package}: {truck2_package.address}", 60)
             else:
                 GUI._string += self._set_space("", 60)
             if truck3_package is not None:
-                GUI._string += self._set_space(f"Package {truck3_package.id}: {truck3_package.address}", 60)
+                GUI._string += self._set_space(f"{truck3_package}: {truck3_package.address}", 60)
             else:
                 GUI._string += self._set_space("", 60)
 

@@ -1,5 +1,6 @@
 from wgups.ds.hashmap import Hashmap
 from wgups.enums.delivery_status import DeliveryStatus
+from wgups.objects.clock import Clock
 
 
 class Package(object):
@@ -44,7 +45,8 @@ class Package:
     master_package_list = []
     _find_by_id = Hashmap()
 
-    def __init__(self, id: int, address: str, city: str, state: str, zip: int, delivery_deadline: str, weight: int, special_notes: str, delivery_status: DeliveryStatus = DeliveryStatus.LOADING):
+    def __init__(self, id: int, address: str, city: str, state: str, zip: int, delivery_deadline: str, weight: int,
+                 special_notes: str, delivery_status: DeliveryStatus = DeliveryStatus.LOADING):
         self.id = id
         self.address = address
         self.city = city
@@ -54,11 +56,47 @@ class Package:
         self.weight = weight
         self.special_notes = special_notes
         self.delivery_status = delivery_status
-        self.delivery_time: str = None
+        if "Delayed" in self.special_notes:
+            self.delivery_status = DeliveryStatus.DELAYED
+        self.last_status_update: str = None
+        self.event_list = []
 
         Package._find_by_id.put(self.id, self)
-
         Package.master_package_list.append(self)
+
+        self.set_last_status_update(Clock(480))
+
+    def add_event(self, event: tuple):
+        """Adds an event to the package event_list
+
+        The event tuple is added to the event list, the event list is
+        then sorted based on the 2nd tuple value (int)
+
+        :param event: tuple(str, int) of the event to be added. The str
+        should be a string representation of the event. The int should
+        be the clock.total_minute when the event occured.
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
+        self.event_list.append(event)
+        sorted(self.event_list, key=lambda event_time: event_time[1])
+
+    def set_last_status_update(self, clock: Clock):
+        """Sets the package's last status update and adds the status update to the package's event list.
+
+        :param clock: The clock being utilized when the status update
+        is being updated.
+
+        Space Complexity
+            O(1)
+        Time Complexity
+            O(1)
+        """
+        self.last_status_update = f"{self.delivery_status.value} @ {clock}"
+        self.add_event((f"{self.last_status_update}", clock.total_minutes))
 
     @classmethod
     def find_by_id(cls, id: int) -> Package:
@@ -77,3 +115,6 @@ class Package:
             O(1)
         """
         return Package._find_by_id.get(id)
+
+    def __repr__(self):
+        return f"\u001b[35mPackage {self.id}\u001b[0m"

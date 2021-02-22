@@ -151,6 +151,6 @@ class Clock:
             str_hr = self.hour
 
         if self.minute < 10:
-            return f"{str_hr}:0{self.minute} {self.meridian}"
+            return f"\u001b[31;1m{str_hr}:0{self.minute} {self.meridian}\u001b[0m"
         else:
-            return f"{str_hr}:{self.minute} {self.meridian}"
+            return f"\u001b[31;1m{str_hr}:{self.minute} {self.meridian}\u001b[0m"
