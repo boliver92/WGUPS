@@ -78,8 +78,8 @@ class GUI:
                 GUI._string += f"{event}\n"
         else:
             GUI._string += "\n"
-            spliced_list = GUI.event_list[list_length - self.events::]
-            # spliced_list = GUI.event_list
+            # spliced_list = GUI.event_list[list_length - self.events::]
+            spliced_list = GUI.event_list
             for event, event_time in spliced_list:
                 GUI._string += f"{event}\n"
 
@@ -156,21 +156,21 @@ class GUI:
         GUI._string += "\n"
 
         for truck in trk.Truck.master_truck_list:
-            GUI._string += self._set_space(f"Current Location: \u001b[34m{truck.current_vertex.label}\u001b[0m", 69)
+            GUI._string += self._set_space(f"Current Location: \u001b[34m{truck.current_vertex.label}\u001b[0m", 68)
         GUI._string += "\n"
 
         for truck in trk.Truck.master_truck_list:
-            GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 69)
+            GUI._string += self._set_space(f"Status: \u001b[34m{truck.status.value}\u001b[0m", 77)
         GUI._string += "\n"
 
         for truck in trk.Truck.master_truck_list:
-            GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.miles}\u001b[0m", 69)
+            GUI._string += self._set_space(f"Total Miles Driven: \u001b[34m{truck.miles}\u001b[0m", 68)
         GUI._string += "\n"
 
         GUI._string += "\n\n"
 
         for i in range(len(trk.Truck.master_truck_list)):
-            GUI._string += self._set_space("----Truck Inventory----", 61)
+            GUI._string += self._set_space("----Truck Inventory----", 59)
         GUI._string += "\n"
 
         # List the remaining packages under each truck.
@@ -195,17 +195,17 @@ class GUI:
                 break
 
             if truck1_package is not None:
-                GUI._string += self._set_space(f"{truck1_package}: {truck1_package.address}", 60)
+                GUI._string += self._set_space(f"{truck1_package}: {truck1_package.address}", 68)
             else:
-                GUI._string += self._set_space("", 60)
+                GUI._string += self._set_space("", 59)
             if truck2_package is not None:
-                GUI._string += self._set_space(f"{truck2_package}: {truck2_package.address}", 60)
+                GUI._string += self._set_space(f"{truck2_package}: {truck2_package.address}", 68)
             else:
-                GUI._string += self._set_space("", 60)
+                GUI._string += self._set_space("", 59)
             if truck3_package is not None:
-                GUI._string += self._set_space(f"{truck3_package}: {truck3_package.address}", 60)
+                GUI._string += self._set_space(f"{truck3_package}: {truck3_package.address}", 68)
             else:
-                GUI._string += self._set_space("", 60)
+                GUI._string += self._set_space("", 59)
 
             GUI._string += "\n"
 
